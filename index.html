@@ -4,21 +4,110 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <title>Exactdiet</title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <style>
+            #spinner:not([hidden]) {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                }
+
+                #spinner::after {
+                content: "";
+                width: 80px;
+                height: 80px;
+                border: 2px solid #f3f3f3;
+                border-top: 3px solid #f25a41;
+                border-radius: 100%;
+                will-change: transform;
+                animation: spin 1s infinite linear
+                }
+
+                @keyframes spin {
+                from {
+                    transform: rotate(0deg);
+                }
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+        </style>
     </head>
     <body>
         <div class="column">
             <div class="row">
-                <div class="col-xl-12 col-lg-12 col-md-12">
+                <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                     <div style="margin: auto; text-align: center;">
-                        <h1>Welcome to exactdiet!</h1>
+                        <h1>Good morning sunshine!</h1>
                         <p>Upload a photo of your food's nutritional facts to see what kind of diet it is!</p>
                         <br>
-                        <input type="file" accept="image/*">
+                        <input name="file" id="image" type="file" accept="image/*" onchange="submit();" />
+                        <div hidden id="spinner"></div>
+                        <div id="imgTest"></div>
                     </div>
-                    
                 </div>
             </div>
         </div>
+
+        <script>
+            const spinner = document.getElementById("spinner");
+
+            function submit() {
+                // spinner.removeAttribute('hidden');
+                var filesSelected = document.getElementById("image").files;
+                if (filesSelected.length > 0) {
+                    var fileToLoad = filesSelected[0];
+
+                    var fileReader = new FileReader();
+
+                    fileReader.onload = function(fileLoadedEvent) {
+                        var srcData = fileLoadedEvent.target.result; // <--- data: base64
+                        srcData = srcData.split(",")[1]
+                        console.log(srcData)
+                        postData('https://gy0s1wfur7.execute-api.us-east-1.amazonaws.com/dev/analyze', { data: srcData })
+                        .then(data => {
+                            console.log(data); // JSON data parsed by `data.json()` call
+                            spinner.setAttribute('hidden', '');
+                            document.getElementById("imgTest").innerHTML = data;
+                        });
+
+                    }
+                    fileReader.readAsDataURL(fileToLoad);
+                }
+            }
+
+            async function postData(url = '', data = {}) {
+                res = ""
+                // Default options are marked with *
+                const response = await fetch(url, {
+                    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+                    mode: 'cors', // no-cors, *cors, same-origin
+                    // cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+                    // credentials: 'same-origin', // include, *same-origin, omit
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json; odata=verbose',
+                        // "Access-Control-Allow-Origin": "*",
+                        // "Access-Control-Allow-Headers": 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                        // "Access-Control-Allow-Methods": "OPTIONS,GET,POST",
+                    },
+                    body: JSON.stringify(data) // body data type must match "Content-Type" header
+                }).then(response => response.json())
+                .then(data => {
+                    res = (data["words"])
+                });
+                console.log(res)
+                return res
+                // return response.json(); // parses JSON response into native JavaScript objects
+            }
+
+
+
+        </script>
 
         <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
