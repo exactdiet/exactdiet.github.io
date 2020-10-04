@@ -46,7 +46,9 @@
                         <p>Upload a photo of your food's nutritional facts to see what kind of diet it is!</p>
                         <br>
                         <input name="file" id="image" type="file" accept="image/*" onchange="submit();" />
-                        <div hidden id="spinner"></div>
+                        <div hidden id="spinner">
+                            <p>Loading...</p>
+                        </div>
                         <div id="imgTest"></div>
                     </div>
                 </div>
@@ -57,7 +59,7 @@
             const spinner = document.getElementById("spinner");
 
             function submit() {
-                // spinner.removeAttribute('hidden');
+                spinner.removeAttribute('hidden');
                 var filesSelected = document.getElementById("image").files;
                 if (filesSelected.length > 0) {
                     var fileToLoad = filesSelected[0];
